@@ -1,0 +1,76 @@
+<html>
+<head>
+<script src='PerlinNoise/perlinLibrary.js'></script>
+<script src='PerlinNoise/grid.js'></script>
+<script src='PerlinNoise/perlinNoise.js'></script>
+</head>
+<body>
+    <canvas id="myCanvas" width="922.5%" height="720%" style="border:1px solid #000000;background-image: url(''); background-color: #000000;"></canvas>
+</body>   
+</html>
+<script>
+    let c = document.getElementById("myCanvas");
+    let ctx = c.getContext("2d");
+    addEventListener ("load", () => {
+    const drawSine = (amplitude = 50, frequency = 2, phase = 0) => {
+        let x_center = c.width/2;
+        let y_center = c.height/2;
+        ctx.fillStyle = "darkGreen";
+        ctx.beginPath();
+ctx.moveTo(0, y_center);
+for (let i = 0; i < c.width; i++) {
+    let y = amplitude * Math.sin(frequency*((i-x_center)/x_center)* 2 * Math.PI + phase) + y_center;
+    ctx.lineTo(i, y);
+}
+ctx.lineTo(c.width, c.height);
+ctx.lineTo(0, c.height);
+ctx.closePath();
+ctx.fill();
+    }
+
+
+        const getRandomNumber = (num) => {return Math.floor((Math.random() * num) + 1);}
+        function drawText(text,x,y,size,color) {
+            ctx.fillStyle = color;
+            ctx.font = size+"px Arial";
+            ctx.fillText(text, x, y);
+    }
+        const drawSquare = (x, y, w, h, color) => {
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, w, h);
+            ctx.stroke();
+        }
+        
+        const drawPerlinGrid = (grid, color1, color2) => {
+            for(let y = 0; y < grid.length; y ++) {
+                for(let x = 0; x < grid.length; x ++) {
+                    drawSquare(x*(c.width/grid.length),y*(c.height/grid.length),c.width/grid.length,c.height/grid.length,"rgb("+Math.abs((((grid[y][x]/(color1.r+1))*(color1.r-color2.r))-color2.r))+","+Math.abs((((grid[y][x]/(color1.g+1))*(color1.g-color2.g))-color2.g))+","+Math.abs((((grid[y][x]/(color1.b+1))*(color1.b-color2.b))-color2.b))+")");
+                    if(grid[y][x] > 100){
+                        drawText("1",x*(c.width/grid.length),y*(c.height/grid.length),c.width/grid.length*0.6,"blue");
+                    }
+                    else{
+                        drawText("O",x*(c.width/grid.length),y*(c.height/grid.length),c.width/grid.length*0.6,"green");                    
+                    }
+                }
+            }
+        }
+        const update = (delta) => {
+            ctx.clearRect(0, 0, c.width, c.height);
+            drawPerlinGrid(addNoise([], 50, 50, depth, {fn:'simplex',scale:25}),{r:100,g:0,b:100},{r:0,g:0,b:100});
+            drawSine(50+(depth*20) % 100, 2, depth);
+            //drawPerlinGrid(addNoise([], 100, 100, depth, {fn:'simplex',scale:25},1));
+            depth+=0.1;
+            //staticNoise(perlinGrid2D);
+        }
+        let depth = 0;
+        //perlinGrid2D = createGrid(perlinGrid2D, GRIDSIZE);
+        //perlinGrid2D = addNoise(perlinGrid2D, 100, 100, depth, {fn:'perlin',scale:25});
+        console.log(perlinGrid2D);
+        drawPerlinGrid(perlinGrid2D);
+        //staticNoise(perlinGrid2D);
+        //update();
+        setInterval(function(){update()},75);
+        //drawSquare(0,0,1000,1000,"blue");
+    });
+</script>
