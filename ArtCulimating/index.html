@@ -15,6 +15,7 @@
     const drawSine = (amplitude = 50, frequency = 2, phase = 0) => {
         let x_center = c.width/2;
         let y_center = c.height/2;
+        amplitude /= 2;
         ctx.fillStyle = "darkGreen";
         ctx.beginPath();
         ctx.moveTo(0, y_center);
@@ -58,7 +59,8 @@
         const update = (delta) => {
             ctx.clearRect(0, 0, c.width, c.height);
             drawPerlinGrid(addNoise([], 50, 50, depth, {fn:'simplex',scale:25}),{r:100,g:0,b:100},{r:0,g:0,b:100});
-            drawSine(50+(depth*20) % 100, 2, depth);
+            if(50+((depth*20) % 100) < 100) drawSine(50+((depth*20) % 100), 2, depth);
+            else drawSine(150-((depth*20) % 100), 2, depth);
             //drawPerlinGrid(addNoise([], 100, 100, depth, {fn:'simplex',scale:25},1));
             depth+=0.1;
             //staticNoise(perlinGrid2D);
