@@ -5,18 +5,25 @@
 <script src='PerlinNoise/perlinNoise.js'></script>
 </head>
 <body>
-    <canvas id="myCanvas" width="922.5%" height="720%" style="border:1px solid #000000;background-image: url(''); background-color: #000000;"></canvas>
+<div style="position: relative;">
+ <canvas id="layer1" width="900" height="600" 
+   style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+ <canvas id="layer2" width="900" height="600" 
+   style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+</div>
 </body>   
 </html>
 <script>
-    let c = document.getElementById("myCanvas");
+    let c = document.getElementById("layer1");
     let ctx = c.getContext("2d");
+ 	let c2 = document.getElementById("layer2");
+    let ctx2 = c2.getContext("2d");
     addEventListener ("load", () => {
-    const drawSine = (amplitude = 50, frequency = 2, phase = 0) => {
+    const drawSine = (start, amplitude = 50, frequency = 2, phase = 0, color) => {
         let x_center = c.width/2;
-        let y_center = c.height/2;
+        let y_center = start;
         amplitude /= 2;
-        ctx.fillStyle = "darkGreen";
+        ctx.fillStyle = color;
         ctx.beginPath();
         ctx.moveTo(0, y_center);
         for (let i = 0; i < c.width; i++) {
@@ -29,8 +36,14 @@
         ctx.fill();
     }
 
-
-        const getRandomNumber = (num) => {return Math.floor((Math.random() * num) + 1);}
+	const drawLine = (x1,y1,x2,y2) => {
+		ctx2.lineWidth = 2;
+		ctx2.beginPath();
+		ctx2.moveTo(x1, y1);
+		ctx2.lineTo(x2, y2);
+		ctx2.stroke();
+	}
+        const getRandomNumber = (num) => {return Math.floor((Math.random() * num) + 1)};
         function drawText(text,x,y,size,color) {
             ctx.fillStyle = color;
             ctx.font = size+"px Arial";
@@ -42,7 +55,20 @@
             ctx.fillRect(x, y, w, h);
             ctx.stroke();
         }
-        
+        const branch = (currentAngle, amountAngle, length, pos) => {
+		let newAngle = currentAngle + amountAngle
+		let newPos = {x:pos.x+(length * Math.cos(currentAngle* Math.PI/180)),y:pos.y-(length * Math.sin(currentAngle* Math.PI/180))};
+		//for(let i = 0; i < 100; i++){
+		//drawLine(pos.x, pos.y, newPos.x/(10-i*0.1), newPos.y/(10-i*0.1));
+		//}
+		drawLine(pos.x, pos.y, newPos.x, newPos.y);
+		//console.log({x:pos.x, y:pos.y}, {x:newPos.x, y:newPos.y});
+		if(length > 4) {
+			branch(newAngle, amountAngle, length*0.75, {x:newPos.x,y:newPos.y});
+			branch(newAngle-amountAngle*2, amountAngle, length*0.75, {x:newPos.x,y:newPos.y});
+		};
+		
+	}
         const drawPerlinGrid = (grid, color1, color2) => {
             for(let y = 0; y < grid.length; y ++) {
                 for(let x = 0; x < grid.length; x ++) {
@@ -59,8 +85,18 @@
         const update = (delta) => {
             ctx.clearRect(0, 0, c.width, c.height);
             drawPerlinGrid(addNoise([], 50, 50, depth, {fn:'simplex',scale:25}),{r:100,g:0,b:100},{r:0,g:0,b:100});
-            if(50+((depth*20) % 100) < 100) drawSine(50+((depth*20) % 100), 2, depth);
-            else drawSine(150-((depth*20) % 100), 2, depth);
+            if(50+((depth*20) % 100) < 100){
+		 drawSine(c.height/2-100,50+((depth*20) % 100), 2, depth,"AliceBlue");
+		drawSine(c.height/2-100,(50+((depth*20) % 100))/2, 2, depth,"AliceBlue");
+		drawSine(c.height/2+200,(50+((depth*20) % 100))/4, 2, depth,"gainsboro");
+		
+		}
+            else {
+		drawSine(c.height/2-100,150-((depth*20) % 100), 2, depth,"AliceBlue");
+		drawSine(c.height/2-100,(150-((depth*20) % 100))/2, 2, depth,"AliceBlue");
+		drawSine(c.height/2+200,(150-((depth*20) % 100))/4, 2, depth,"gainsboro");
+	
+		}
             //drawPerlinGrid(addNoise([], 100, 100, depth, {fn:'simplex',scale:25},1));
             depth+=0.1;
             //staticNoise(perlinGrid2D);
@@ -68,11 +104,15 @@
         let depth = 0;
         //perlinGrid2D = createGrid(perlinGrid2D, GRIDSIZE);
         //perlinGrid2D = addNoise(perlinGrid2D, 100, 100, depth, {fn:'perlin',scale:25});
-        console.log(perlinGrid2D);
+        //console.log(perlinGrid2D);
         drawPerlinGrid(perlinGrid2D);
         //staticNoise(perlinGrid2D);
         //update();
+	branch(90, 39, 100, {x:c.width/2,y:c.height});
         setInterval(function(){update()},75);
         //drawSquare(0,0,1000,1000,"blue");
     });
 </script>
+
+
+
